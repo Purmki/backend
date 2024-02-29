@@ -68,11 +68,44 @@ const deleteGroup = async (req, res) => {
 
 
   const addUserToGroup = async (req, res) => {
-    
+    const { groupId, userId } = req.body;
+    try {
+      const updatedGroup = await Group.findByIdAndUpdate(
+        groupId,
+        { $addToSet: { onlineUsers: userId } },
+        { new: true }
+      );
+      if (!updatedGroup) {
+        return res.status(404).json({ error: 'Group not found' });
+      }
+      // Emit a Socket.IO event to notify clients about the user join
+      io.to(groupId).emit('user-joined', { userId, userName: 'User Name' }); // You can replace 'User Name' with the actual user name
+      res.json(updatedGroup);
+    } catch (error) {
+      console.error('Error adding user to group:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
   };
   
+  
   const removeUserFromGroup = async (req, res) => {
-    
+    const { groupId, userId } = req.body;
+    try {
+      const updatedGroup = await Group.findByIdAndUpdate(
+        groupId,
+        { $pull: { onlineUsers: userId } },
+        { new: true }
+      );
+      if (!updatedGroup) {
+        return res.status(404).json({ error: 'Group not found' });
+      }
+      // Emit a Socket.IO event to notify clients about the user leave
+      io.to(groupId).emit('user-left', { userId, userName: 'User Name' }); // You can replace 'User Name' with the actual user name
+      res.json(updatedGroup);
+    } catch (error) {
+      console.error('Error removing user from group:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
   };
   
 

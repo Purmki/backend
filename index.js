@@ -1,8 +1,10 @@
 const {app, server} = require("./app")
 const mongoose = require("mongoose")
-const mongoUrl = "mongodb://localhost:27017/quiz_up"
+const {config} = require("./config")
 
-mongoose.connect(mongoUrl)
+
+
+mongoose.connect(config.MONGO_URL)
 .then(()=>{
   console.log("connected to db")
 }).catch(error=>{
